@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>חידון SkyTrain ונקובר</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #005DAA 0%, #0079C2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #005DAA;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #FDB913;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .start-screen, .quiz-screen, .result-screen {
+            text-align: center;
+        }
+
+        .start-screen img {
+            max-width: 400px;
+            width: 100%;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .btn {
+            background: #FDB913;
+            color: #005DAA;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px;
+        }
+
+        .btn:hover {
+            background: #E5A000;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary {
+            background: #E3000F;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #C40010;
+        }
+
+        .progress {
+            background: #f0f0f0;
+            height: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #005DAA 0%, #0079C2 100%);
+            height: 100%;
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .train-image {
+            max-width: 500px;
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin: 20px auto;
+            display: block;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .option-btn {
+            background: white;
+            border: 3px solid #005DAA;
+            padding: 20px;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #005DAA;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option-btn:hover {
+            background: #005DAA;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .option-btn.correct {
+            background: #4CAF50;
+            border-color: #4CAF50;
+            color: white;
+        }
+
+        .option-btn.wrong {
+            background: #E3000F;
+            border-color: #E3000F;
+            color: white;
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        .score-display {
+            font-size: 3em;
+            color: #005DAA;
+            margin: 30px 0;
+            font-weight: bold;
+        }
+
+        .result-message {
+            font-size: 1.5em;
+            color: #333;
+            margin: 20px 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚇 חידון SkyTrain</h1>
+            <div class="subtitle">TransLink Vancouver</div>
+        </div>
+
+        <!-- מסך התחלה -->
+        <div id="startScreen" class="start-screen">
+            <p style="font-size: 1.2em; color: #333; margin: 20px 0;">
+                בדקו את הידע שלכם על רכבות הסקייטריין של ונקובר!<br>
+                10 שאלות - 4 תשובות אפשריות
+            </p>
+            <button class="btn" onclick="startQuiz()">התחל משחק</button>
+        </div>
+
+        <!-- מסך משחק -->
+        <div id="quizScreen" class="quiz-screen hidden">
+            <div class="progress">
+                <div id="progressBar" class="progress-bar">שאלה 1 מתוך 10</div>
+            </div>
+            
+            <img id="trainImage" class="train-image" src="" alt="תמונת רכבת">
+            
+            <h2 style="color: #005DAA; margin: 20px 0;">איזה סוג רכבת מוצג בתמונה?</h2>
+            
+            <div class="options" id="options"></div>
+            
+            <button class="btn btn-secondary" onclick="stopQuiz()" style="margin-top: 30px;">עצור משחק</button>
+        </div>
+
+        <!-- מסך תוצאות -->
+        <div id="resultScreen" class="result-screen hidden">
+            <h2 style="color: #005DAA; font-size: 2em;">המשחק הסתיים!</h2>
+            <div class="score-display" id="finalScore">0/10</div>
+            <div class="result-message" id="resultMessage"></div>
+            <button class="btn" onclick="startQuiz()">משחק חדש</button>
+        </div>
+    </div>
+
+    <script>
+        // הגדרת מסלול התמונות - שנה את זה לנתיב שלך ב-GitHub
+        const IMAGE_BASE_PATH = 'images/';
+        
+        // מספר התמונות בכל תיקיה - עדכן בהתאם למספר התמונות שיש לך
+        const IMAGE_COUNTS = {
+            'mark1': 5,   // מספר תמונות Mark I
+            'mark2': 5,   // מספר תמונות Mark II
+            'mark3': 5,   // מספר תמונות Mark III
+            'mark5': 5    // מספר תמונות Mark V
+        };
+
+        const trainTypes = [
+            { name: 'Mark I', folder: 'mark1' },
+            { name: 'Mark II', folder: 'mark2' },
+            { name: 'Mark III', folder: 'mark3' },
+            { name: 'Mark V', folder: 'mark5' }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let questions = [];
+
+        function getRandomImage(folder) {
+            const count = IMAGE_COUNTS[folder];
+            const randomNum = Math.floor(Math.random() * count) + 1;
+            return `${IMAGE_BASE_PATH}${folder}/${randomNum}.jpg`;
+        }
+
+        function generateQuestions() {
+            questions = [];
+            for (let i = 0; i < 10; i++) {
+                const correctTrain = trainTypes[Math.floor(Math.random() * trainTypes.length)];
+                questions.push({
+                    image: getRandomImage(correctTrain.folder),
+                    correct: correctTrain.name,
+                    options: shuffleArray([...trainTypes.map(t => t.name)])
+                });
+            }
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            generateQuestions();
+            
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('quizScreen').classList.remove('hidden');
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = questions[currentQuestion];
+            
+            document.getElementById('trainImage').src = question.image;
+            document.getElementById('progressBar').style.width = ((currentQuestion + 1) / 10 * 100) + '%';
+            document.getElementById('progressBar').textContent = `שאלה ${currentQuestion + 1} מתוך 10`;
+            
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = option;
+                btn.onclick = () => checkAnswer(option, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected, btn) {
+            const question = questions[currentQuestion];
+            const allButtons = document.querySelectorAll('.option-btn');
+            
+            allButtons.forEach(b => b.disabled = true);
+            
+            if (selected === question.correct) {
+                btn.classList.add('correct');
+                score++;
+            } else {
+                btn.classList.add('wrong');
+                allButtons.forEach(b => {
+                    if (b.textContent === question.correct) {
+                        b.classList.add('correct');
+                    }
+                });
+            }
+            
+            setTimeout(() => {
+                currentQuestion++;
+                if (currentQuestion < 10) {
+                    showQuestion();
+                } else {
+                    showResults();
+                }
+            }, 1500);
+        }
+
+        function showResults() {
+            document.getElementById('quizScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.remove('hidden');
+            
+            document.getElementById('finalScore').textContent = `${score}/10`;
+            
+            let message = '';
+            if (score === 10) {
+                message = '🎉 מושלם! אתה מומחה אמיתי לסקייטריין!';
+            } else if (score >= 7) {
+                message = '👏 מצוין! אתה מכיר היטב את הרכבות!';
+            } else if (score >= 5) {
+                message = '👍 לא רע! עוד קצת תרגול ותהיה מושלם!';
+            } else {
+                message = '💪 כדאי לנסוע עוד קצת ברכבת התחתית!';
+            }
+            
+            document.getElementById('resultMessage').textContent = message;
+        }
+
+        function stopQuiz() {
+            document.getElementById('quizScreen').classList.add('hidden');
+            document.getElementById('startScreen').classList.remove('hidden');
+            currentQuestion = 0;
+            score = 0;
+        }
+    </script>
+</body>
+</html>
